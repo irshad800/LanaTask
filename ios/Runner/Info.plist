@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- Biometric Authentication Permissions -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>We need your Face ID to authenticate</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need access to your microphone for biometric authentication</string>
 </dict>
 </plist>

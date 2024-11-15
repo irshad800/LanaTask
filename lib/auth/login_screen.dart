@@ -57,8 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     backgroundColor: Colors.white, // Text color
                     padding: EdgeInsets.symmetric(vertical: 15),
                     shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(30), // Rounded corners
+                      borderRadius: BorderRadius.circular(30),
                     ),
                     elevation: 5, // Shadow
                   ),
@@ -151,10 +150,8 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Logged in successfully')),
         );
-        // Navigate to the next screen
         Navigator.pushReplacementNamed(context, '/home');
       } else {
-        // Authentication failed
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Login failed')),
         );

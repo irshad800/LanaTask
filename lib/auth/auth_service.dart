@@ -3,15 +3,14 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
+import '../rbac/role_based_access.dart';
+import '../utils/constants.dart';
+
 class AuthService {
   final _secureStorage = FlutterSecureStorage();
-
-  // OAuth 2.0 client credentials
-  final String clientId = 'dRQBoYEw1Rg2EID3f41BBYg0U5cwWg99';
-  final String clientSecret =
-      'T_VSU5X1t6jbxfIDQuuDhmeWZKqA7ZVjTknTMsTEvLIcMfxbRlZlpRtWo1e5yGlM';
-  final String authUrl =
-      'https://dev-845g6oozz65q5v2e.us.auth0.com/oauth/token';
+  final String clientId = Constants.clientId;
+  final String clientSecret = Constants.clientSecret;
+  final String authUrl = Constants.authUrl;
 
   Future<Map<String, String>?> authenticate() async {
     try {
@@ -33,9 +32,20 @@ class AuthService {
         String refreshToken = data['refresh_token'];
 
         await _storeTokens(accessToken, refreshToken);
+
+        String? userRole = _decodeToken(accessToken);
+        RoleBasedAccessControl roleBasedAccess =
+            RoleBasedAccessControl(userRole ?? '');
+
+        if (roleBasedAccess.isAdmin()) {
+          print('User is Admin');
+        } else if (roleBasedAccess.isUser()) {
+          print('User is a regular user');
+        }
+
         return {
-          'access_token': accessToken,
-          'refresh_token': refreshToken,
+          Constants.authTokenKey: accessToken,
+          Constants.refreshTokenKey: refreshToken,
         };
       } else {
         return null;
@@ -46,23 +56,31 @@ class AuthService {
     }
   }
 
-  // Store tokens securely using flutter_secure_storage
+  String? _decodeToken(String token) {
+    try {
+      // final decoded = Jwt.parseJwt(token);
+      //
+      // return decoded['role'];
+    } catch (e) {
+      print('Error decoding JWT: $e');
+      return null;
+    }
+  }
+
   Future<void> _storeTokens(String accessToken, String refreshToken) async {
-    await _secureStorage.write(key: 'access_token', value: accessToken);
-    await _secureStorage.write(key: 'refresh_token', value: refreshToken);
+    await _secureStorage.write(key: Constants.authTokenKey, value: accessToken);
+    await _secureStorage.write(
+        key: Constants.refreshTokenKey, value: refreshToken);
   }
 
-  // Get stored access token
   Future<String?> getAccessToken() async {
-    return await _secureStorage.read(key: 'access_token');
+    return await _secureStorage.read(key: Constants.authTokenKey);
   }
 
-  // Get stored refresh token
   Future<String?> getRefreshToken() async {
-    return await _secureStorage.read(key: 'refresh_token');
+    return await _secureStorage.read(key: Constants.refreshTokenKey);
   }
 
-  // Refresh access token using the refresh token
   Future<String?> refreshAccessToken() async {
     String? refreshToken = await getRefreshToken();
     if (refreshToken == null) {
@@ -82,15 +100,15 @@ class AuthService {
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       String newAccessToken = data['access_token'];
-      await _secureStorage.write(key: 'access_token', value: newAccessToken);
+      await _secureStorage.write(
+          key: Constants.authTokenKey, value: newAccessToken);
       return newAccessToken;
     }
     return null;
   }
 
-  // Logout method to clear tokens
   Future<void> logout() async {
-    await _secureStorage.delete(key: 'access_token');
-    await _secureStorage.delete(key: 'refresh_token');
+    await _secureStorage.delete(key: Constants.authTokenKey);
+    await _secureStorage.delete(key: Constants.refreshTokenKey);
   }
 }

@@ -1,4 +1,5 @@
-import io.flutter.embedding.android.FlutterFragmentActivity
+package com.example.lana_task
 
-class MainActivity: FlutterFragmentActivity() {
-}
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity: FlutterActivity()
